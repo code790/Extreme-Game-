@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Fighting Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px auto;
+            max-width: 900px;
+        }
+
+        .fighter {
+            text-align: center;
+            width: 40%;
+            position: relative;
+        }
+
+        img {
+            width: 200px;
+            height: auto;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .health-bar {
+            background-color: #444;
+            border: 1px solid #fff;
+            height: 20px;
+            margin: 10px auto;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .health {
+            height: 100%;
+            width: 100%;
+            background-color: #0f0;
+            transition: width 0.5s ease-in-out;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Pause/Replay button styles */
+        .control-buttons {
+            margin-top: 20px;
+        }
+
+        /* Animation keyframes */
+        @keyframes attack-animation {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-30px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes attack-animation-reverse {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(30px); }
+            100% { transform: translateX(0); }
+        }
+
+        .attack {
+            animation: attack-animation 0.3s ease-in-out;
+        }
+
+        .attack-reverse {
+            animation: attack-animation-reverse 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fighter Battle</h1>
+    <div class="game-container">
+        <!-- Fighter 1 -->
+        <div class="fighter">
+            <h2>Fighter 1</h2>
+            <img src="png-clipart-buildbox-adventure-ninja-game-2d-runner-game-ninja-kid-run-free-fun-games-android-game-computer-wallpaper.png" alt="Fighter 1" id="fighter1-img">
+            <div class="health-bar">
+                <div class="health" id="health1"></div>
+            </div>
+            <button onclick="attack('fighter2', 'fighter1-img')" class="attack-button">Attack!</button>
+        </div>
+
+        <!-- Fighter 2 -->
+        <div class="fighter">
+            <h2>Fighter 2</h2>
+            <img src="png-clipart-buildbox-adventure-ninja-game-2d-runner-game-ninja-kid-run-free-fun-games-android-game-computer-wallpaper.png" alt="Fighter 2" id="fighter2-img">
+            <div class="health-bar">
+                <div class="health" id="health2"></div>
+            </div>
+            <button onclick="attack('fighter1', 'fighter2-img')" class="attack-button">Attack!</button>
+        </div>
+    </div>
+
+    <div class="control-buttons">
+        <button onclick="pauseGame()" id="pause-btn">Pause</button>
+        <button onclick="replayGame()" id="replay-btn" style="display: none;">Replay</button>
+    </div>
+
+    <h2 id="result"></h2>
+
+    <script>
+        let health1 = 100;
+        let health2 = 100;
+        let isPaused = false;
+
+        function attack(target, attackerId) {
+            if (isPaused) return; // Prevent actions when paused
+
+            const damage = Math.floor(Math.random() * 20) + 5; // Random damage between 5 and 25
+
+            // Add animation class to the attacking fighter
+            const attacker = document.getElementById(attackerId);
+            if (attackerId === 'fighter1-img') {
+                attacker.classList.add('attack');
+            } else {
+                attacker.classList.add('attack-reverse');
+            }
+
+            // Remove animation class after animation ends
+            setTimeout(() => {
+                attacker.classList.remove('attack');
+                attacker.classList.remove('attack-reverse');
+            }, 300);
+
+            // Apply damage to the target
+            if (target === 'fighter2') {
+                health2 -= damage;
+                if (health2 < 0) health2 = 0;
+                document.getElementById('health2').style.width = health2 + '%';
+            } else {
+                health1 -= damage;
+                if (health1 < 0) health1 = 0;
+                document.getElementById('health1').style.width = health1 + '%';
+            }
+
+            checkGameOver();
+        }
+
+        function checkGameOver() {
+            const result = document.getElementById('result');
+            if (health1 <= 0) {
+                result.textContent = 'Fighter 2 Wins!';
+                disableButtons();
+            } else if (health2 <= 0) {
+                result.textContent = 'Fighter 1 Wins!';
+                disableButtons();
+            }
+        }
+
+        function disableButtons() {
+            document.querySelectorAll('.attack-button').forEach(button => button.disabled = true);
+            document.getElementById('pause-btn').disabled = true; // Disable pause button
+            document.getElementById('replay-btn').style.display = 'inline'; // Show replay button
+        }
+
+        function pauseGame() {
+            isPaused = !isPaused; // Toggle pause state
+            const pauseBtn = document.getElementById('pause-btn');
+            if (isPaused) {
+                pauseBtn.textContent = 'Resume';
+                document.querySelectorAll('.attack-button').forEach(button => button.disabled = true);
+            } else {
+                pauseBtn.textContent = 'Pause';
+                document.querySelectorAll('.attack-button').forEach(button => button.disabled = false);
+            }
+        }
+
+        function replayGame() {
+            // Reset health values
+            health1 = 100;
+            health2 = 100;
+
+            // Reset health bar widths
+            document.getElementById('health1').style.width = '100%';
+            document.getElementById('health2').style.width = '100%';
+
+            // Reset result text
+            document.getElementById('result').textContent = '';
+
+            // Enable all buttons
+            document.querySelectorAll('.attack-button').forEach(button => button.disabled = false);
+            document.getElementById('pause-btn').disabled = false;
+            document.getElementById('pause-btn').textContent = 'Pause';
+
+            // Hide replay button
+            document.getElementById('replay-btn').style.display = 'none';
+
+            // Reset pause state
+            isPaused = false;
+        }
+    </script>
+</body>
+</html>
